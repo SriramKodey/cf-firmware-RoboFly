@@ -65,6 +65,7 @@
 #include "estimator_kalman.h"
 #include "estimator_ukf.h"
 #include "deck.h"
+#include "disc_spi.h"
 #include "extrx.h"
 #include "app.h"
 #include "static_mem.h"
@@ -142,6 +143,8 @@ void systemInit(void)
   pmInit();
   buzzerInit();
   peerLocalizationInit();
+  discSpiTaskInit();
+  //discSpiTaskEnqueueInput(20);
 
 #ifdef CONFIG_APP_ENABLE
   appInit();
@@ -158,6 +161,7 @@ bool systemTest()
   pass &= pmTest();
   pass &= workerTest();
   pass &= buzzerTest();
+  pass &= discSpiTaskTest();
   return pass;
 }
 

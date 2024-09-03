@@ -64,6 +64,7 @@
 #define PASSTHROUGH_TASK_PRI    5
 #define STABILIZER_TASK_PRI     5
 #define SENSORS_TASK_PRI        4
+#define DISC_SPI_TASK_PRI       2
 #define ADC_TASK_PRI            3
 #define FLOW_TASK_PRI           3
 #define MULTIRANGER_TASK_PRI    3
@@ -112,6 +113,7 @@
 #define SYSTEM_TASK_NAME        "SYSTEM"
 #define LEDSEQCMD_TASK_NAME     "LEDSEQCMD"
 #define ADC_TASK_NAME           "ADC"
+#define DISC_SPI_TASK_NAME      "DISC_SPI"
 #define PM_TASK_NAME            "PWRMGNT"
 #define CRTP_TX_TASK_NAME       "CRTP-TX"
 #define CRTP_RX_TASK_NAME       "CRTP-RX"
@@ -164,6 +166,7 @@
 #define SYSTEM_TASK_STACKSIZE         (2* configMINIMAL_STACK_SIZE)
 #define LEDSEQCMD_TASK_STACKSIZE      configMINIMAL_STACK_SIZE
 #define ADC_TASK_STACKSIZE            configMINIMAL_STACK_SIZE
+#define DISC_SPI_TASK_STACKSIZE       (2* configMINIMAL_STACK_SIZE)
 #define PM_TASK_STACKSIZE             configMINIMAL_STACK_SIZE
 #define CRTP_TX_TASK_STACKSIZE        configMINIMAL_STACK_SIZE
 #define CRTP_RX_TASK_STACKSIZE        (2* configMINIMAL_STACK_SIZE)

@@ -11,9 +11,10 @@
 #include "deck_constants.h"
 
 #include "disc_spi.h"
+#include "flyController_PID.h"
 
 static xQueueHandle inputQueue;
-STATIC_MEM_QUEUE_ALLOC(inputQueue, 1, sizeof(int));
+STATIC_MEM_QUEUE_ALLOC(inputQueue, 5, sizeof(flyControl_t));
 
 static void discSpiTask(void *);
 STATIC_MEM_TASK_ALLOC(discSpiTask, DISC_SPI_TASK_STACKSIZE);
@@ -27,7 +28,7 @@ static bool isInit = false;
 
 static discPacket_t writePacket;
 
-void discSpiTaskInit() {
+xQueueHandle discSpiTaskInit() {
     inputQueue = STATIC_MEM_QUEUE_CREATE(inputQueue);
 
     writePacket.amplitude = 2501.5678f;
@@ -43,6 +44,8 @@ void discSpiTaskInit() {
 
     STATIC_MEM_TASK_CREATE(discSpiTask, discSpiTask, DISC_SPI_TASK_NAME, NULL, DISC_SPI_TASK_PRI);
     isInit = true;
+
+    return inputQueue;
 }
 
 bool discSpiTaskTest() {
@@ -52,11 +55,15 @@ bool discSpiTaskTest() {
 static void discSpiTask(void * parameters) {
     DEBUG_PRINT("DISC_SPI_TASK main function is running");
     while(true) {
-        int input;
-        if (pdTRUE == xQueueReceive(inputQueue, &input, 0)) {
+        flyControl_t input;
+        if (pdTRUE == xQueueReceive(inputQueue, &input, portMAX_DELAY)) {
             // set current data packet values
+            writePacket.amplitude = input.amplitude;
+            writePacket.delta_amplitude = input.delta_amplitude;
+            writePacket.offset = input.offset;
         }
-        vTaskDelay(2); // Set speed, Talk to Daksh
+        /* Control module will initiate transmission */
+        vTaskDelay(100);
         spiBeginTransaction(spiSpeed);
         memcpy(spiTxBuffer, &writePacket, 12);
         digitalWrite(cs_Pin, LOW);
@@ -66,6 +73,6 @@ static void discSpiTask(void * parameters) {
     }
 }
 
-void discSpiTaskEnqueueInput(int value) {
+void discSpiTaskEnqueueInput(float value) {
     xQueueOverwrite(inputQueue, &value);
 }

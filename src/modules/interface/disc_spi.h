@@ -3,15 +3,15 @@
 
 #include <stdbool.h>
 
-typedef struct __attribute__((__packed__)){
+typedef struct __attribute__((__packed__)) {
     float amplitude;
     float delta_amplitude;
     float offset;
-}discPacket_t;
+} discPacket_t;
 
-void discSpiTaskInit();
+xQueueHandle discSpiTaskInit();
 bool discSpiTaskTest();
 
-void discSpiTaskEnqueueInput(int value);
+void discSpiTaskEnqueueInput(float value);
 
 #endif

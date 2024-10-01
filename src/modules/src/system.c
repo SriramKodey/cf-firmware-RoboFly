@@ -51,6 +51,7 @@
 #include "uart2.h"
 #include "comm.h"
 #include "stabilizer.h"
+#include "flyController.h"
 #include "commander.h"
 #include "console.h"
 #include "usblink.h"
@@ -86,6 +87,8 @@ static bool isInit;
 static char nrf_version[16];
 static uint8_t testLogParam;
 static uint8_t doAssert;
+/* flyController Queue Handles */
+static xQueueHandle spiTaskQueueHandle;
 
 STATIC_MEM_TASK_ALLOC(systemTask, SYSTEM_TASK_STACKSIZE);
 
@@ -143,8 +146,8 @@ void systemInit(void)
   pmInit();
   buzzerInit();
   peerLocalizationInit();
-  discSpiTaskInit();
-  //discSpiTaskEnqueueInput(20);
+  spiTaskQueueHandle = discSpiTaskInit();
+  flyControllerTaskInit();
 
 #ifdef CONFIG_APP_ENABLE
   appInit();
@@ -162,6 +165,7 @@ bool systemTest()
   pass &= workerTest();
   pass &= buzzerTest();
   pass &= discSpiTaskTest();
+  pass &= flyControllerTaskTest();
   return pass;
 }
 

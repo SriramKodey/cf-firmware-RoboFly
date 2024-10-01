@@ -63,8 +63,9 @@
 // Task priorities. Higher number higher priority
 #define PASSTHROUGH_TASK_PRI    5
 #define STABILIZER_TASK_PRI     5
+#define CONTROLLER_TASK_PRI     3 // change later
 #define SENSORS_TASK_PRI        4
-#define DISC_SPI_TASK_PRI       2
+#define DISC_SPI_TASK_PRI       2 // change later
 #define ADC_TASK_PRI            3
 #define FLOW_TASK_PRI           3
 #define MULTIRANGER_TASK_PRI    3
@@ -123,6 +124,7 @@
 #define PARAM_TASK_NAME         "PARAM"
 #define SENSORS_TASK_NAME       "SENSORS"
 #define STABILIZER_TASK_NAME    "STABILIZER"
+#define CONTROLLER_TASK_NAME    "CONTROLLER"
 #define NRF24LINK_TASK_NAME     "NRF24LINK"
 #define ESKYLINK_TASK_NAME      "ESKYLINK"
 #define SYSLINK_TASK_NAME       "SYSLINK"
@@ -176,6 +178,7 @@
 #define PARAM_TASK_STACKSIZE          (2 * configMINIMAL_STACK_SIZE)
 #define SENSORS_TASK_STACKSIZE        (2 * configMINIMAL_STACK_SIZE)
 #define STABILIZER_TASK_STACKSIZE     (3 * configMINIMAL_STACK_SIZE)
+#define CONTROLLER_TASK_STACKSIZE     (3 * configMINIMAL_STACK_SIZE)
 #define NRF24LINK_TASK_STACKSIZE      configMINIMAL_STACK_SIZE
 #define ESKYLINK_TASK_STACKSIZE       configMINIMAL_STACK_SIZE
 #define SYSLINK_TASK_STACKSIZE        (2 * configMINIMAL_STACK_SIZE)

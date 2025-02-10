@@ -126,7 +126,7 @@ typedef struct {
 void flyController_PID_Init(flyController_PID_t* flyController);
 
 /* Misc functions used within the individual controllers */
-void eulaer_calc(flyController_PID_t* flyController, flyState_t actual);
+void euler_calc(flyController_PID_t* flyController, flyState_t actual);
 
 /* Individual Controllers */
 void altitude_controller(flyController_PID_t* flyController, flyState_t actual, desriedPosition_t set_point);

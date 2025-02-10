@@ -67,6 +67,7 @@
 #include "estimator_ukf.h"
 #include "deck.h"
 #include "disc_spi.h"
+//#include "mocap_uart.h"
 #include "extrx.h"
 #include "app.h"
 #include "static_mem.h"
@@ -88,7 +89,8 @@ static char nrf_version[16];
 static uint8_t testLogParam;
 static uint8_t doAssert;
 /* flyController Queue Handles */
-static xQueueHandle spiTaskQueueHandle;
+// static xQueueHandle spiTaskQueueHandle;
+// static xQueueHandle flyControllerTaskQueueHandle;
 
 STATIC_MEM_TASK_ALLOC(systemTask, SYSTEM_TASK_STACKSIZE);
 
@@ -146,8 +148,10 @@ void systemInit(void)
   pmInit();
   buzzerInit();
   peerLocalizationInit();
-  spiTaskQueueHandle = discSpiTaskInit();
-  flyControllerTaskInit();
+  //discSpiTaskInit();
+  //spiTaskQueueHandle = discSpiTaskInit();
+  //flyControllerTaskQueueHandle = flyControllerTaskInit(spiTaskQueueHandle); // My Controller
+  //mocapTaskInit(flyControllerTaskQueueHandle);
 
 #ifdef CONFIG_APP_ENABLE
   appInit();
@@ -164,8 +168,9 @@ bool systemTest()
   pass &= pmTest();
   pass &= workerTest();
   pass &= buzzerTest();
-  pass &= discSpiTaskTest();
-  pass &= flyControllerTaskTest();
+  // pass &= mocapTaskTest();
+  // pass &= discSpiTaskTest();
+  // pass &= flyControllerTaskTest();
   return pass;
 }
 

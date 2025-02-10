@@ -25,6 +25,7 @@ obj-y += log.o
 obj-y += mem.o
 obj-y += crtp_mem.o
 obj-y += msp.o
+obj-y += mocap_uart.o
 obj-y += param_logic.o
 obj-y += param_task.o
 obj-y += peer_localization.o

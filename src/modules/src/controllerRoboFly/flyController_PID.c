@@ -48,7 +48,7 @@ void flyController_PID_Init(flyController_PID_t* flyController)
     flyController->p1.roll_Kd = 0.0f;
 
     flyController->p1.pitch_Kp = 324.0f;
-    flyController->p1.pitch_Kp = 81.0f;
+    flyController->p1.pitch_Ki = 81.0f;
     flyController->p1.pitch_Kd = 0.0f;
 
     flyController->p1.attitude_damping = -13.0f;
@@ -282,6 +282,14 @@ void control(flyController_PID_t* flyController, flyState_t state_vector, desrie
         /* Sets the zdw used for the desired attitude */
         lateral_controller(flyController, state_vector, setPoint);
         // add ramp up logic 
+        // Do I need this??
+        static int iter = 1;
+        if (iter <= 20)
+        {
+            flyController->setAttitude.zdw_0 = 0.05f * iter * flyController->setAttitude.zdw_0;
+            flyController->setAttitude.zdw_1 = 0.05f * iter * flyController->setAttitude.zdw_1;
+            iter++;
+        }
     }
 
     if(flyController->p1.attitude_ON)
@@ -292,3 +300,4 @@ void control(flyController_PID_t* flyController, flyState_t state_vector, desrie
     /* Converts accelerations to Voltages */
     compute_control_voltages(flyController);
 }
+

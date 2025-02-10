@@ -63,9 +63,10 @@
 // Task priorities. Higher number higher priority
 #define PASSTHROUGH_TASK_PRI    5
 #define STABILIZER_TASK_PRI     5
-#define CONTROLLER_TASK_PRI     3 // change later
+#define CONTROLLER_TASK_PRI     5 // change later
 #define SENSORS_TASK_PRI        4
-#define DISC_SPI_TASK_PRI       2 // change later
+#define MOCAP_UART_TASK_PRI     4 // check later
+#define DISC_SPI_TASK_PRI       4 // change later
 #define ADC_TASK_PRI            3
 #define FLOW_TASK_PRI           3
 #define MULTIRANGER_TASK_PRI    3
@@ -115,6 +116,7 @@
 #define LEDSEQCMD_TASK_NAME     "LEDSEQCMD"
 #define ADC_TASK_NAME           "ADC"
 #define DISC_SPI_TASK_NAME      "DISC_SPI"
+#define MOCAP_UART_TASK_NAME    "MOCAP_UART"
 #define PM_TASK_NAME            "PWRMGNT"
 #define CRTP_TX_TASK_NAME       "CRTP-TX"
 #define CRTP_RX_TASK_NAME       "CRTP-RX"
@@ -165,13 +167,14 @@
 
 
 //Task stack sizes
-#define SYSTEM_TASK_STACKSIZE         (2* configMINIMAL_STACK_SIZE)
+#define SYSTEM_TASK_STACKSIZE         (2 * configMINIMAL_STACK_SIZE)
 #define LEDSEQCMD_TASK_STACKSIZE      configMINIMAL_STACK_SIZE
 #define ADC_TASK_STACKSIZE            configMINIMAL_STACK_SIZE
-#define DISC_SPI_TASK_STACKSIZE       (2* configMINIMAL_STACK_SIZE)
+#define DISC_SPI_TASK_STACKSIZE       (2 * configMINIMAL_STACK_SIZE)
+#define MOCAP_UART_TASK_STACKSIZE     (2 * configMINIMAL_STACK_SIZE)
 #define PM_TASK_STACKSIZE             configMINIMAL_STACK_SIZE
 #define CRTP_TX_TASK_STACKSIZE        configMINIMAL_STACK_SIZE
-#define CRTP_RX_TASK_STACKSIZE        (2* configMINIMAL_STACK_SIZE)
+#define CRTP_RX_TASK_STACKSIZE        (2 * configMINIMAL_STACK_SIZE)
 #define CRTP_RXTX_TASK_STACKSIZE      configMINIMAL_STACK_SIZE
 #define LOG_TASK_STACKSIZE            (2 * configMINIMAL_STACK_SIZE)
 #define MEM_TASK_STACKSIZE            (2 * configMINIMAL_STACK_SIZE)

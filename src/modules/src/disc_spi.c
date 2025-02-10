@@ -29,6 +29,7 @@ static bool isInit = false;
 static discPacket_t writePacket;
 
 xQueueHandle discSpiTaskInit() {
+//void discSpiTaskInit() {
     inputQueue = STATIC_MEM_QUEUE_CREATE(inputQueue);
 
     writePacket.amplitude = 2501.5678f;
@@ -56,7 +57,7 @@ static void discSpiTask(void * parameters) {
     DEBUG_PRINT("DISC_SPI_TASK main function is running");
     while(true) {
         flyControl_t input;
-        if (pdTRUE == xQueueReceive(inputQueue, &input, portMAX_DELAY)) {
+        if (pdTRUE == xQueueReceive(inputQueue, &input, 0 /*portMAX_DELAY*/)) {
             // set current data packet values
             writePacket.amplitude = input.amplitude;
             writePacket.delta_amplitude = input.delta_amplitude;

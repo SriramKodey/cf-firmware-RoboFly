@@ -67,7 +67,7 @@
 #include "estimator_ukf.h"
 #include "deck.h"
 #include "disc_spi.h"
-//#include "mocap_uart.h"
+#include "mocap_uart.h"
 #include "extrx.h"
 #include "app.h"
 #include "static_mem.h"
@@ -88,9 +88,10 @@ static bool isInit;
 static char nrf_version[16];
 static uint8_t testLogParam;
 static uint8_t doAssert;
+
 /* flyController Queue Handles */
-// static xQueueHandle spiTaskQueueHandle;
-// static xQueueHandle flyControllerTaskQueueHandle;
+static xQueueHandle spiTaskQueueHandle;
+static xQueueHandle flyControllerTaskQueueHandle;
 
 STATIC_MEM_TASK_ALLOC(systemTask, SYSTEM_TASK_STACKSIZE);
 
@@ -142,16 +143,15 @@ void systemInit(void)
 
   configblockInit();
   storageInit();
-  workerInit();
-  adcInit();
+  //workerInit();
+  //adcInit();
   ledseqInit();
-  pmInit();
-  buzzerInit();
-  peerLocalizationInit();
-  //discSpiTaskInit();
-  //spiTaskQueueHandle = discSpiTaskInit();
-  //flyControllerTaskQueueHandle = flyControllerTaskInit(spiTaskQueueHandle); // My Controller
-  //mocapTaskInit(flyControllerTaskQueueHandle);
+  //pmInit();
+  //buzzerInit();
+  //peerLocalizationInit();
+  spiTaskQueueHandle = discSpiTaskInit();
+  flyControllerTaskQueueHandle = flyControllerTaskInit(spiTaskQueueHandle); // My Controller
+  mocapTaskInit(flyControllerTaskQueueHandle);
 
 #ifdef CONFIG_APP_ENABLE
   appInit();
@@ -165,12 +165,12 @@ bool systemTest()
   bool pass=isInit;
 
   pass &= ledseqTest();
-  pass &= pmTest();
-  pass &= workerTest();
-  pass &= buzzerTest();
-  // pass &= mocapTaskTest();
-  // pass &= discSpiTaskTest();
-  // pass &= flyControllerTaskTest();
+  // pass &= pmTest();
+  // pass &= workerTest();
+  // pass &= buzzerTest();
+  pass &= mocapTaskTest();
+  pass &= discSpiTaskTest();
+  pass &= flyControllerTaskTest();
   return pass;
 }
 
@@ -201,15 +201,15 @@ void systemTask(void *arg)
   commInit();
   commanderInit();
 
-  StateEstimatorType estimator = StateEstimatorTypeAutoSelect;
+  // StateEstimatorType estimator = StateEstimatorTypeAutoSelect;
 
-  #ifdef CONFIG_ESTIMATOR_KALMAN_ENABLE
-  estimatorKalmanTaskInit();
-  #endif
+  // #ifdef CONFIG_ESTIMATOR_KALMAN_ENABLE
+  // estimatorKalmanTaskInit();
+  // #endif
 
-  #ifdef CONFIG_ESTIMATOR_UKF_ENABLE
-  errorEstimatorUkfTaskInit();
-  #endif
+  // #ifdef CONFIG_ESTIMATOR_UKF_ENABLE
+  // errorEstimatorUkfTaskInit();
+  // #endif
 
   // Enabling incoming syslink messages to be added to the queue.
   // This should probably be done later, but deckInit() takes a long time if this is done later.
@@ -217,12 +217,12 @@ void systemTask(void *arg)
 
   memInit();
   deckInit();
-  estimator = deckGetRequiredEstimator();
-  stabilizerInit(estimator);
-  if (deckGetRequiredLowInterferenceRadioMode() && platformConfigPhysicalLayoutAntennasAreClose())
-  {
-    platformSetLowInterferenceRadioMode();
-  }
+  // estimator = deckGetRequiredEstimator();
+  // stabilizerInit(estimator);
+  // if (deckGetRequiredLowInterferenceRadioMode() && platformConfigPhysicalLayoutAntennasAreClose())
+  // {
+  //   platformSetLowInterferenceRadioMode();
+  // }
   soundInit();
   crtpMemInit();
 
@@ -254,24 +254,24 @@ void systemTask(void *arg)
     pass = false;
     DEBUG_PRINT("commander [FAIL]\n");
   }
-  if (stabilizerTest() == false) {
-    pass = false;
-    DEBUG_PRINT("stabilizer [FAIL]\n");
-  }
+  // if (stabilizerTest() == false) {
+  //   pass = false;
+  //   DEBUG_PRINT("stabilizer [FAIL]\n");
+  // }
 
-  #ifdef CONFIG_ESTIMATOR_KALMAN_ENABLE
-  if (estimatorKalmanTaskTest() == false) {
-    pass = false;
-    DEBUG_PRINT("estimatorKalmanTask [FAIL]\n");
-  }
-  #endif
+  // #ifdef CONFIG_ESTIMATOR_KALMAN_ENABLE
+  // if (estimatorKalmanTaskTest() == false) {
+  //   pass = false;
+  //   DEBUG_PRINT("estimatorKalmanTask [FAIL]\n");
+  // }
+  // #endif
 
-  #ifdef CONFIG_ESTIMATOR_UKF_ENABLE
-  if (errorEstimatorUkfTaskTest() == false) {
-    pass = false;
-    DEBUG_PRINT("estimatorUKFTask [FAIL]\n");
-  }
-  #endif
+  // #ifdef CONFIG_ESTIMATOR_UKF_ENABLE
+  // if (errorEstimatorUkfTaskTest() == false) {
+  //   pass = false;
+  //   DEBUG_PRINT("estimatorUKFTask [FAIL]\n");
+  // }
+  // #endif
 
   if (deckTest() == false) {
     pass = false;
@@ -297,10 +297,10 @@ void systemTask(void *arg)
     pass = false;
     DEBUG_PRINT("cfAssertNormalStart [FAIL]\n");
   }
-  if (peerLocalizationTest() == false) {
-    pass = false;
-    DEBUG_PRINT("peerLocalization [FAIL]\n");
-  }
+  // if (peerLocalizationTest() == false) {
+  //   pass = false;
+  //   DEBUG_PRINT("peerLocalization [FAIL]\n");
+  // }
 
   //Start the firmware
   if(pass)

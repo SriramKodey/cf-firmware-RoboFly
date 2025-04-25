@@ -48,27 +48,11 @@ static void flyControllerTask(void* parameters) {
         flyState_t state;
         if (pdTRUE == xQueueReceive(inputQueue, &state, portMAX_DELAY)) {
             // Call control on state
+            control(&flyController, state, setPoint);
+
+            /* Enqueue control */
+            xQueueSend(spiTaskQueueHandle, &(flyController.output), 0);
         }
-
-        // Set sample state
-        state.altitudeZ = 0;
-        state.positionX = 0;
-        state.positionY = 0;
-        state.quat_w = 1;
-        state.quat_i = 0;
-        state.quat_j = 0;
-        state.quat_k = 0;
-
-        flyController.state = state;
-        // Give state to control 
-        control(&flyController, state, setPoint);
-
-        /* Enqueue control */
-        xQueueSend(spiTaskQueueHandle, &(flyController.output), 0);
-
-        /*** DELAY ***/
-        // Added during Dev, edit later //
-        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 
@@ -76,21 +60,21 @@ void flyControllerTaskEnqueueInput(flyState_t state) {
     xQueueOverwrite(inputQueue, &state);
 }
 
-/**
- * Logging variables for the command and reference signals for the
- * PID flyController
- */
-LOG_GROUP_START(flyControl)
-/**
- * @brief Thrust command
- */
-LOG_ADD(LOG_FLOAT,  amplitude, &(flyController.output.amplitude))
-/**
- * @brief Roll command
- */
-LOG_ADD(LOG_FLOAT, delta_amplitude, &(flyController.output.delta_amplitude))
-/**
- * @brief Pitch command
- */
-LOG_ADD(LOG_FLOAT, offset, &(flyController.output.offset))
-LOG_GROUP_STOP(flyControl)
+// /**
+//  * Logging variables for the command and reference signals for the
+//  * PID flyController
+//  */
+// LOG_GROUP_START(flyControl)
+// /**
+//  * @brief Thrust command
+//  */
+// LOG_ADD(LOG_FLOAT,  amplitude, &(flyController.output.amplitude))
+// /**
+//  * @brief Roll command
+//  */
+// LOG_ADD(LOG_FLOAT, delta_amplitude, &(flyController.output.delta_amplitude))
+// /**
+//  * @brief Pitch command
+//  */
+// LOG_ADD(LOG_FLOAT, offset, &(flyController.output.offset))
+// LOG_GROUP_STOP(flyControl)

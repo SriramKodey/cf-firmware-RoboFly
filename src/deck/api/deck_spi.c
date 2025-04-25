@@ -143,7 +143,7 @@ void spiBegin(void)
   spiDMAInit();
 
   /*!< SPI configuration */
-  spiConfigureWithSpeed(SPI_BAUDRATE_2MHZ);
+  spiConfigureWithSpeed(SPI_BAUDRATE_21MHZ);
 
   isInit = true;
 }

@@ -37,36 +37,36 @@ void flyController_PID_Init(flyController_PID_t* flyController)
     /* body Model */
     flyController->p1.weight = 0.0014f;
     flyController->p1.Jx = 2.5e-9;
-    flyController->p1.Jy = 6e-9;
+    flyController->p1.Jy = 6.5e-9;
     flyController->p1.Jz = 5e-9;
     flyController->p1.r = 1.5e-2;
-    flyController->p1.liftoff_V = 145;
+    flyController->p1.liftoff_V = 135;  // Set the right liftoff
 
     /* PID Gains */
-    flyController->p1.roll_Kp = 324.0f;
-    flyController->p1.roll_Ki = 81.0f;
+    flyController->p1.roll_Kp = 172.8f;
+    flyController->p1.roll_Ki = 43.2f;
     flyController->p1.roll_Kd = 0.0f;
 
-    flyController->p1.pitch_Kp = 324.0f;
-    flyController->p1.pitch_Ki = 81.0f;
+    flyController->p1.pitch_Kp = 172.8f;
+    flyController->p1.pitch_Ki = 43.2f;
     flyController->p1.pitch_Kd = 0.0f;
 
-    flyController->p1.attitude_damping = -13.0f;
+    flyController->p1.attitude_damping = -14.0f;
 
-    flyController->p1.altitude_Kp = 0.7f;
-    flyController->p1.altitude_Ki = 0.0f;
-    flyController->p1.altitude_Kd = 3.0f;
+    flyController->p1.altitude_Kp = 8.75f; // V/m
+    flyController->p1.altitude_Ki = 0.0f; // V/ms
+    flyController->p1.altitude_Kd = 3.0f; // V/(m/s)
 
-    flyController->p1.lateralX_Kp = 5.0f;
-    flyController->p1.lateralX_Ki = 0.05f;
-    flyController->p1.lateralX_Kd = 2.0f;
+    flyController->p1.lateralX_Kp = 8.4f;
+    flyController->p1.lateralX_Ki = 0.0f;
+    flyController->p1.lateralX_Kd = 1.2f;
 
-    flyController->p1.lateralY_Kp = 5.0f;
-    flyController->p1.lateralY_Kp = 0.05f;
-    flyController->p1.lateralY_Kp = 2.0f;
+    flyController->p1.lateralY_Kp = 8.4f;
+    flyController->p1.lateralY_Ki = 0.0f;
+    flyController->p1.lateralY_Kd = 1.2;
 
     // Initialise the controlConfigs using a function - write later!!
-    flyController->p1.dt = 0.005;
+    flyController->p1.dt = 0.004166; // 0.004166secs = 1/240 Hz
 
     /* PID Structs */
     PID_Init(&(flyController->altitude_PID), flyController->p1.altitude_Kp, flyController->p1.altitude_Ki, flyController->p1.altitude_Kd, flyController->p1.dt);
@@ -111,11 +111,25 @@ static float bwFilter_Process(arm_biquad_casd_df1_inst_f32 *fliter, float input)
     return output;
 }
 
+flyState_t filter_state(flyController_PID_t *flyController, flyState_t state){
+    flyState_t filteredState;
+
+    filteredState.positionX = bwFilter_Process(&(flyController->xpos_Bf), state.positionX);
+    filteredState.positionY = bwFilter_Process(&(flyController->ypos_Bf), state.positionY);
+    filteredState.altitudeZ = bwFilter_Process(&(flyController->zpos_Bf), state.altitudeZ);
+    filteredState.quat_i = bwFilter_Process(&(flyController->quatx_Bf), state.quat_i);
+    filteredState.quat_j = bwFilter_Process(&(flyController->quaty_Bf), state.quat_j);
+    filteredState.quat_k = bwFilter_Process(&(flyController->quatz_Bf), state.quat_k);
+    filteredState.quat_w = bwFilter_Process(&(flyController->quatw_Bf), state.quat_w);
+
+    return filteredState;
+}
+
 void altitude_controller(flyController_PID_t* flyController, flyState_t actual, desriedPosition_t set_point)
 {
     /* Operates in terms of accelerations */
     float output = calc_PID_Output(&(flyController->altitude_PID), actual.altitudeZ, set_point.Z);
-    saturate_output(&output, 0.5, -1.0);
+    saturate_output(&output, 0.5, -1.0); // Check Saturation
     flyController->z_acc = output;
 }
 
@@ -296,7 +310,6 @@ void control(flyController_PID_t* flyController, flyState_t state_vector, desrie
     {
         attitude_controller(flyController, state_vector, flyController->setAttitude);
     }
-
     /* Converts accelerations to Voltages */
     compute_control_voltages(flyController);
 }

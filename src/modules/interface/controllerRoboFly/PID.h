@@ -7,7 +7,7 @@ typedef struct{
     float P;
     float I;
     float D;
-    float lastError;
+    float lastActual;
     float lastOutput;
     float errorSum;
     float dt;

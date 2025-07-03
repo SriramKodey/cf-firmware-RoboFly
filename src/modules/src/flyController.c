@@ -15,6 +15,8 @@ STATIC_MEM_QUEUE_ALLOC(inputQueue, 5, sizeof(flyState_t));
 /* flyController struct - needs to be static!! */
 static flyController_PID_t flyController;
 static desriedPosition_t setPoint;
+static desriedPosition_t initPoint;
+static uint32_t counter = 1;
 static QueueHandle_t spiTaskQueueHandle;
 
 /* Task prototype and Stack allocation */
@@ -29,9 +31,14 @@ xQueueHandle flyControllerTaskInit(QueueHandle_t sendQueue) {
     spiTaskQueueHandle = sendQueue;
     /* Initialise flyController */
     flyController_PID_Init(&flyController);
-    setPoint.X = -0.5;
-    setPoint.Y = -0.5;
-    setPoint.Z = 0.8;
+    // Controller Debugging
+    // flyController.p1.attitude_ON = false;
+    // flyController.p1.lateral_ON = false;
+    // Controller Debugging
+
+    initPoint.X = 0;
+    initPoint.Y = 0;
+    initPoint.Z = 0;
 
     STATIC_MEM_TASK_CREATE(flyControllerTask, flyControllerTask, CONTROLLER_TASK_NAME, NULL, CONTROLLER_TASK_PRI);
     isInit = true;
@@ -48,10 +55,31 @@ static void flyControllerTask(void* parameters) {
         flyState_t state;
         if (pdTRUE == xQueueReceive(inputQueue, &state, portMAX_DELAY)) {
             // Call control on state
-            control(&flyController, state, setPoint);
+            // Set initial state
+            flyController.output.ID = state.ID;
+            state = filter_state(&flyController, state);
+            if(counter < 500) {
+                initPoint.X = (initPoint.X*counter + state.positionX) / (counter + 1);
+                initPoint.Y = (initPoint.Y*counter + state.positionY) / (counter + 1);
+                initPoint.Z = (initPoint.Z*counter + state.altitudeZ) / (counter + 1);
+                ++counter;
 
-            /* Enqueue control */
-            xQueueSend(spiTaskQueueHandle, &(flyController.output), 0);
+                if(counter == 500) {
+                    setPoint.X = initPoint.X;
+                    setPoint.Y = initPoint.Y;
+                    setPoint.Z = initPoint.Z;
+                }
+            }
+
+            else {
+                ++counter;
+                if(counter == 2500) {
+                    setPoint.Z = setPoint.Z + 0.2f;
+                }
+                control(&flyController, state, setPoint);
+                /* Enqueue control */
+                xQueueSend(spiTaskQueueHandle, &(flyController.output), 0);
+            }
         }
     }
 }
@@ -60,21 +88,3 @@ void flyControllerTaskEnqueueInput(flyState_t state) {
     xQueueOverwrite(inputQueue, &state);
 }
 
-// /**
-//  * Logging variables for the command and reference signals for the
-//  * PID flyController
-//  */
-// LOG_GROUP_START(flyControl)
-// /**
-//  * @brief Thrust command
-//  */
-// LOG_ADD(LOG_FLOAT,  amplitude, &(flyController.output.amplitude))
-// /**
-//  * @brief Roll command
-//  */
-// LOG_ADD(LOG_FLOAT, delta_amplitude, &(flyController.output.delta_amplitude))
-// /**
-//  * @brief Pitch command
-//  */
-// LOG_ADD(LOG_FLOAT, offset, &(flyController.output.offset))
-// LOG_GROUP_STOP(flyControl)

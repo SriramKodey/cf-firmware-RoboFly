@@ -146,7 +146,7 @@ void systemInit(void)
   //workerInit();
   //adcInit();
   ledseqInit();
-  //pmInit();
+  pmInit();
   //buzzerInit();
   //peerLocalizationInit();
   spiTaskQueueHandle = discSpiTaskInit();
@@ -165,7 +165,7 @@ bool systemTest()
   bool pass=isInit;
 
   pass &= ledseqTest();
-  // pass &= pmTest();
+  pass &= pmTest();
   // pass &= workerTest();
   // pass &= buzzerTest();
   pass &= mocapTaskTest();
@@ -199,7 +199,7 @@ void systemTask(void *arg)
   //Init the high-levels modules
   systemInit();
   commInit();
-  commanderInit();
+  //commanderInit();
 
   // StateEstimatorType estimator = StateEstimatorTypeAutoSelect;
 
@@ -250,10 +250,10 @@ void systemTask(void *arg)
     pass = false;
     DEBUG_PRINT("comm [FAIL]\n");
   }
-  if (commanderTest() == false) {
-    pass = false;
-    DEBUG_PRINT("commander [FAIL]\n");
-  }
+  // if (commanderTest() == false) {
+  //   pass = false;
+  //   DEBUG_PRINT("commander [FAIL]\n");
+  // }
   // if (stabilizerTest() == false) {
   //   pass = false;
   //   DEBUG_PRINT("stabilizer [FAIL]\n");

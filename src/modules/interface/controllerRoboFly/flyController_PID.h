@@ -62,6 +62,7 @@ typedef struct {
     float amplitude;
     float delta_amplitude;
     float offset;
+    uint32_t ID;
 } flyControl_t;
 
 typedef struct {
@@ -73,6 +74,8 @@ typedef struct {
     float quat_i; // quat(1)
     float quat_j; // quat(2)
     float quat_k; // quat(3)
+
+    uint32_t ID;
 } flyState_t;
 
 typedef struct {
@@ -135,6 +138,9 @@ void lateral_controller(flyController_PID_t* flyConntroller, flyState_t actual, 
 
 /* Gets input from lateral_controller */
 void attitude_controller(flyController_PID_t* flyController, flyState_t actual, desiredAttitude_t set_point);
+
+/* Applies butterworth filter on the states */
+flyState_t filter_state(flyController_PID_t* flyController, flyState_t actual);
 
 /* Calls all layers of PID functions sequentially */
 void control(flyController_PID_t* flyController, flyState_t state_vector, desriedPosition_t setPoint);

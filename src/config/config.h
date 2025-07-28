@@ -63,10 +63,11 @@
 // Task priorities. Higher number higher priority
 #define PASSTHROUGH_TASK_PRI    5
 #define STABILIZER_TASK_PRI     5
-#define CONTROLLER_TASK_PRI     4 // change later
+#define CONTROLLER_TASK_PRI     4
+#define STATE_MACHINE_TASK_PRI  4
 #define SENSORS_TASK_PRI        4
-#define MOCAP_UART_TASK_PRI     4 // check later
-#define DISC_SPI_TASK_PRI       4 // change later
+#define MOCAP_UART_TASK_PRI     4
+#define DISC_SPI_TASK_PRI       4
 #define ADC_TASK_PRI            3
 #define FLOW_TASK_PRI           3
 #define MULTIRANGER_TASK_PRI    3
@@ -127,6 +128,7 @@
 #define SENSORS_TASK_NAME       "SENSORS"
 #define STABILIZER_TASK_NAME    "STABILIZER"
 #define CONTROLLER_TASK_NAME    "CONTROLLER"
+#define STATE_MACHINE_TASK_NAME "STATE_MACHINE"
 #define NRF24LINK_TASK_NAME     "NRF24LINK"
 #define ESKYLINK_TASK_NAME      "ESKYLINK"
 #define SYSLINK_TASK_NAME       "SYSLINK"
@@ -172,6 +174,7 @@
 #define ADC_TASK_STACKSIZE            configMINIMAL_STACK_SIZE
 #define DISC_SPI_TASK_STACKSIZE       (2 * configMINIMAL_STACK_SIZE)
 #define MOCAP_UART_TASK_STACKSIZE     (2 * configMINIMAL_STACK_SIZE)
+#define STATE_MACHINE_TASK_STACKSIZE  (3 * configMINIMAL_STACK_SIZE)
 #define PM_TASK_STACKSIZE             configMINIMAL_STACK_SIZE
 #define CRTP_TX_TASK_STACKSIZE        configMINIMAL_STACK_SIZE
 #define CRTP_RX_TASK_STACKSIZE        (2 * configMINIMAL_STACK_SIZE)

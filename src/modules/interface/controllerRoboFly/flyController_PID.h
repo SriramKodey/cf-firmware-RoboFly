@@ -18,6 +18,7 @@ typedef struct {
 
     /* baseline voltages and liftoff constants */
     float liftoff_V;
+    float offset_V;
 
     /* PID Gains */
     float roll_Kp, roll_Ki, roll_Kd;
@@ -59,9 +60,10 @@ typedef struct {
 } eulerAngles_t;
 
 typedef struct {
+    float offset;
     float amplitude;
     float delta_amplitude;
-    float offset;
+    float delta_offset;
     uint32_t ID;
 } flyControl_t;
 

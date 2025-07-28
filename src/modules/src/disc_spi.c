@@ -12,10 +12,9 @@
 #include "deck_constants.h"
 
 #include "disc_spi.h"
-#include "flyController_PID.h"
 
 static xQueueHandle inputQueue;
-STATIC_MEM_QUEUE_ALLOC(inputQueue, 5, sizeof(flyControl_t));
+STATIC_MEM_QUEUE_ALLOC(inputQueue, 10, sizeof(flyControl_t));
 
 static void discSpiTask(void *);
 STATIC_MEM_TASK_ALLOC(discSpiTask, DISC_SPI_TASK_STACKSIZE);
@@ -27,7 +26,7 @@ static TickType_t lastLEDToggleTime = 0;
 static bool ledOn = false;
 
 static uint16_t spiSpeed = SPI_BAUDRATE_21MHZ;
-static uint8_t spiTxBuffer[20];
+static uint8_t spiTxBuffer[sizeof(discPacket_t)];
 static uint8_t spiRxBuffer[10];
 static bool isInit = false;
 
@@ -54,27 +53,25 @@ bool discSpiTaskTest() {
 }
 
 static void discSpiTask(void * parameters) {
-    DEBUG_PRINT("DISC_SPI_TASK main function is running");
+    writePacket.offset = 0.0;
     writePacket.amplitude = 0.0;
     writePacket.delta_amplitude = 0.0;
-    writePacket.offset = 0.0;
-    writePacket.mu = 0.0;
-    writePacket.ID = 0;
+    writePacket.delta_offset = 0.0;
+    writePacket.ID = (uint32_t) 0;
     xLastWakeTime = xTaskGetTickCount();
     flyControl_t input;
     while(true) {
         if (pdTRUE == xQueueReceive(inputQueue, &input, portMAX_DELAY)) {
             // set current data packet values
-            writePacket.ID = input.ID;
+            writePacket.offset = input.offset;
             writePacket.amplitude = input.amplitude;
             writePacket.delta_amplitude = input.delta_amplitude;
-            writePacket.offset = input.offset;
-            writePacket.mu = writePacket.mu + 1;
-            writePacket.tickTime = (uint32_t) xTaskGetTickCount();
+            writePacket.delta_offset = input.delta_offset;
+            writePacket.ID = input.ID;
         }
         /* Control module will initiate transmission */
         spiBeginTransaction(spiSpeed);
-        memcpy(spiTxBuffer, &writePacket, 24);
+        memcpy(spiTxBuffer, &writePacket, sizeof(discPacket_t));
         digitalWrite(cs_Pin, LOW);
         spiExchange(sizeof(discPacket_t), spiTxBuffer, spiRxBuffer);
         digitalWrite(cs_Pin, HIGH);
@@ -90,6 +87,6 @@ static void discSpiTask(void * parameters) {
     }
 }
 
-void discSpiTaskEnqueueInput(float value) {
-    xQueueOverwrite(inputQueue, &value);
+void discSpiTaskEnqueueInput(flyControl_t value) {
+    xQueueSendToBack(inputQueue, &value, pdMS_TO_TICKS(0));
 }

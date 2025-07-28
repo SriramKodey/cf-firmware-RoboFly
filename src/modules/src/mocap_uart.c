@@ -15,10 +15,13 @@ static xQueueHandle inputQueue;
 STATIC_MEM_QUEUE_ALLOC(inputQueue, 5, sizeof(int));
 
 static QueueHandle_t flyControllerTaskQueueHandle;
+static QueueHandle_t stateMachineTaskQueueHandle;
 static TickType_t xLastWakeTime;
 
 static TickType_t lastGoodPacketTime = 0;
 static TickType_t lastLEDToggleTime = 0;
+
+static const uint32_t uartTimeout = 2; // in ms
 
 static bool ledOn = false;
 
@@ -31,10 +34,11 @@ static bool isInit = false;
 static const uint32_t BAUD_RATE = (uint32_t) 230400;
 static const int bufferSize = 33;
 
-void mocapTaskInit(QueueHandle_t sendQueue) {
+void mocapTaskInit(mocapTaskQueueHandleInput_t sendQueues) {
     inputQueue = STATIC_MEM_QUEUE_CREATE(inputQueue);
 
-    flyControllerTaskQueueHandle = sendQueue;
+    flyControllerTaskQueueHandle = sendQueues.flyControllerTaskQueueHandle;
+    stateMachineTaskQueueHandle = sendQueues.stateMachineTaskQueueHandle;
 
     uart2Init(BAUD_RATE);
 
@@ -50,15 +54,18 @@ static void mocapTask(void * parameters) {
     systemWaitStart();
     xLastWakeTime = xTaskGetTickCount();
     while (true) {
-        char startByte = 's';
+        char startByte = 'i';
         char testByte;
         uint8_t readBuffer[50];
         bool goodRead = false;
 
         do {
-            uart2GetDataWithTimeout(1, &startByte, M2T(2));
+            uart2GetDataWithTimeout(1, &startByte, uartTimeout);
             xLastWakeTime = xTaskGetTickCount();
-        } while(startByte != 's');
+        } while(startByte != 's' && startByte != 'e');
+
+        // because it's only the start trigger its ok to not be instanteous
+        xQueueSend(stateMachineTaskQueueHandle, &startByte, pdMS_TO_TICKS(0));
 
         if (startByte == 's') {
             if (uart2GetData(bufferSize, readBuffer) >= 32) {
@@ -80,6 +87,11 @@ static void mocapTask(void * parameters) {
                     xQueueSend(flyControllerTaskQueueHandle, &stateEstimate, pdMS_TO_TICKS(0));
                 }
             }
+        }
+
+        else if (startByte == 'e') {
+            // ramp down logic in state machine
+            xQueueSend(flyControllerTaskQueueHandle, &stateEstimate, pdMS_TO_TICKS(0));
         }
         
         TickType_t now = xTaskGetTickCount();

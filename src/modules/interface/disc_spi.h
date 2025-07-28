@@ -2,19 +2,21 @@
 #define __DISC_SPI_H__
 
 #include <stdbool.h>
+#include <queue.h>
+
+#include "flyController_PID.h"
 
 typedef struct __attribute__((__packed__)) {
-    uint32_t ID;
+    float offset;
     float amplitude;
     float delta_amplitude;
-    float offset;
-    float mu;
-    uint32_t tickTime;
+    float delta_offset;
+    uint32_t ID;
 } discPacket_t;
 
-xQueueHandle discSpiTaskInit();
+QueueHandle_t discSpiTaskInit();
 bool discSpiTaskTest();
 
-void discSpiTaskEnqueueInput(float value);
+void discSpiTaskEnqueueInput(flyControl_t value);
 
 #endif

@@ -68,6 +68,7 @@
 #include "deck.h"
 #include "disc_spi.h"
 #include "mocap_uart.h"
+#include "state_machine.h"
 #include "extrx.h"
 #include "app.h"
 #include "static_mem.h"
@@ -91,7 +92,10 @@ static uint8_t doAssert;
 
 /* flyController Queue Handles */
 static xQueueHandle spiTaskQueueHandle;
-static xQueueHandle flyControllerTaskQueueHandle;
+static xQueueHandle FSMTaskQueueHandle;
+static flyControllerHandles_t flyControllerHandles;
+static stateMachineHandleInput_t stateMachineHandleInput;
+static mocapTaskQueueHandleInput_t mocapTaskQueueHandleInput;
 
 STATIC_MEM_TASK_ALLOC(systemTask, SYSTEM_TASK_STACKSIZE);
 
@@ -150,8 +154,15 @@ void systemInit(void)
   //buzzerInit();
   //peerLocalizationInit();
   spiTaskQueueHandle = discSpiTaskInit();
-  flyControllerTaskQueueHandle = flyControllerTaskInit(spiTaskQueueHandle); // My Controller
-  mocapTaskInit(flyControllerTaskQueueHandle);
+  flyControllerHandles = flyControllerTaskInit(spiTaskQueueHandle); // My Controller
+
+  stateMachineHandleInput.flyControllerTaskHandle = flyControllerHandles.flyControllerTaskHandle;
+  stateMachineHandleInput.spiTaskQueueHandle = spiTaskQueueHandle;
+  FSMTaskQueueHandle = state_machineTaskInit(stateMachineHandleInput);
+
+  mocapTaskQueueHandleInput.flyControllerTaskQueueHandle = flyControllerHandles.flyControllerQueueHandle;
+  mocapTaskQueueHandleInput.stateMachineTaskQueueHandle = FSMTaskQueueHandle;
+  mocapTaskInit(mocapTaskQueueHandleInput);
 
 #ifdef CONFIG_APP_ENABLE
   appInit();
@@ -171,6 +182,7 @@ bool systemTest()
   pass &= mocapTaskTest();
   pass &= discSpiTaskTest();
   pass &= flyControllerTaskTest();
+  pass &= state_machineTaskTest();
   return pass;
 }
 

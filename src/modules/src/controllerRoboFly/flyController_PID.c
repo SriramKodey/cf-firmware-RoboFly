@@ -40,7 +40,9 @@ void flyController_PID_Init(flyController_PID_t* flyController)
     flyController->p1.Jy = 6.5e-9;
     flyController->p1.Jz = 5e-9;
     flyController->p1.r = 1.5e-2;
-    flyController->p1.liftoff_V = 135;  // Set the right liftoff
+    flyController->p1.liftoff_V = 140;  // Liftoff Voltage
+    flyController->p1.offset_V = 130;   // Offset Voltage = Bias/2
+ 
 
     /* PID Gains */
     flyController->p1.roll_Kp = 172.8f;
@@ -129,7 +131,7 @@ void altitude_controller(flyController_PID_t* flyController, flyState_t actual, 
 {
     /* Operates in terms of accelerations */
     float output = calc_PID_Output(&(flyController->altitude_PID), actual.altitudeZ, set_point.Z);
-    saturate_output(&output, 0.5, -1.0); // Check Saturation
+    saturate_output(&output, 2, -1.0); // Check Saturation
     flyController->z_acc = output;
 }
 
@@ -276,9 +278,10 @@ void compute_control_voltages(flyController_PID_t* flyController) {
     saturate_output(&roll_deltaV, 45, -45);
     saturate_output(&pitch_deltaV, 45, -45);
 
+    flyController->output.offset = flyController->p1.offset_V;
     flyController->output.amplitude = amplitude_Vp2P;
     flyController->output.delta_amplitude = roll_deltaV;
-    flyController->output.offset = pitch_deltaV;
+    flyController->output.delta_offset = pitch_deltaV;
 }
 
 void control(flyController_PID_t* flyController, flyState_t state_vector, desriedPosition_t setPoint)
@@ -295,8 +298,8 @@ void control(flyController_PID_t* flyController, flyState_t state_vector, desrie
     {
         /* Sets the zdw used for the desired attitude */
         lateral_controller(flyController, state_vector, setPoint);
-        // add ramp up logic 
-        // Do I need this??
+        // add ramp up logic
+        // Avoids sudden jumps in delta amp and delta offset
         static int iter = 1;
         if (iter <= 20)
         {
